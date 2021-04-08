@@ -4,9 +4,6 @@
   "description": "",
   "main": "run.js",
   "type": "module",
-  "scripts": {
-    "test": "node /home/randomguy90/RPI/Program/js/discordbot/app.js"
-  },
   "author": "",
   "license": "ISC",
   "dependencies": {
