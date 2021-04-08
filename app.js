@@ -13,8 +13,10 @@ import pass from "./pass.js";
 const Discord = require("discord.js");
 let request = require(`request`);
 let fs = require(`fs`);
+let os = require(`os`);
 let fsp = require(`fs/promises`);
 var Map = require("collection-map");
+
 
 let limit = 100;
 const dumpPath = pass.SAVE_PATH;
@@ -107,8 +109,19 @@ client.on("message", (msg) => {
             +dump:
                 -u      select user
                 -c      amount images to save
+                -i      platform info
             `);
     }
+
+    if(msg.content === "+dump -i"){
+        msg.channel.send(`
+            +dump:
+                hostname:       ${os.hostname()}
+                system:         ${os.platform()}
+                architecture:   ${os.arch()}
+            `)
+    }
+
 
     if (msg.attachments.first()) {
         console.log("attachment");
@@ -118,13 +131,13 @@ client.on("message", (msg) => {
         let name = path + "/" + msg.attachments.first().name;
         let url = msg.attachments.first().url;
         save_img(url, name);
-        client.user.setActivity(`"+dump"`);
+        client.user.setActivity(`"+help"`);
     }
 
     if (msg.content.startsWith("+dump")) {
         const args = msg.content.trim().split(/ +/g);
         for (var i = 0; i <= args.length; i++) {
-            console.log(args[i]);
+            
             switch (args[i]) {
                 case "-u":
                     var lookForUser = args[i + 1];
@@ -134,8 +147,8 @@ client.on("message", (msg) => {
                     break;
             }
         }
-        console.log(args[1] !== "undefined");
-        console.log(parseInt(args[1]) !== "NaN");
+        
+        
 
         msg.channel.messages
             .fetch()
@@ -159,7 +172,7 @@ client.on("message", (msg) => {
                     });
                 }
                 
-                console.log(buffer.length);
+                
 
                 let x = 0;
                 for (var i = 0; i <= buffer.length - 1; i++) {
