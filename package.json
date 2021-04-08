@@ -1,0 +1,17 @@
+{
+  "name": "discordbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "run.js",
+  "type": "module",
+  "scripts": {
+    "test": "node /home/randomguy90/RPI/Program/js/discordbot/app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "collection-map": "^1.0.0",
+    "discord.js": "^12.5.1",
+    "request": "^2.88.2"
+  }
+}
