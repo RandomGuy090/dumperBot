@@ -17,6 +17,9 @@ let os = require(`os`);
 let fsp = require(`fs/promises`);
 var Map = require("collection-map");
 
+/*var enableLogs = true;*/
+var enableLogs = false;
+var lastAttachment = "";
 
 let limit = 100;
 const dumpPath = pass.SAVE_PATH;
@@ -84,12 +87,56 @@ function save_img(url, name) {
             name = name + "0";
         } else {
             download(url, name);
+            return name;
             break;
         }
     }
 }
 
-client.on("ready", () => {
+
+function writeLog(msg){
+    let path = create_folders(msg);
+    let name = path + "/logs.txt";
+      
+    fs.readFile(name,(err, data) => {
+
+        console.log(data)
+
+        if (typeof(data) === "undefined"){
+           /*when file hasn't got content*/
+           console.log("empty");
+                fs.appendFile(name, `<-----------------#${msg.channel.name}------------$${msg.channel.guild.name}------------------>\n`, (err) => {
+                if (err) throw err;
+            });
+        }
+    });
+  
+    var nickName = (msg.author.username+ "                 |").substring(0, 15);;
+    var date = new Date();
+    var hours = ((date.getHours()<10?"0":"")+date.getHours())
+    var min = ((date.getMinutes()<10?"0":"")+date.getMinutes())
+    var buffer = `${hours}:${min} ${nickName} |`
+    
+
+    
+    if (msg.content) {
+        buffer += msg.content;
+    }
+
+    if (msg.attachments.first()) {
+        if (lastAttachment == "") {
+            lastAttachment = msg.attachments.first().name;
+        }
+        buffer += `Sent image: ${lastAttachment}\n`
+    }
+
+
+    fs.appendFile(name, buffer+"\n", (err) => {
+        if (err) throw err;
+    });
+}
+
+client.on("ready", (chan) => {
     console.log("I am ready!");
     client.user.setActivity(`"+dump"`);
 });
@@ -100,8 +147,18 @@ client.on("message", (msg) => {
     console.log("chanel name: " + msg.channel.name);
     console.log("autor: " + msg.author.username);
 
+
     if (msg.content === "+ping") {
         msg.channel.send("pong");
+    }
+
+    if (msg.content === "+dump -l") {
+        if (enableLogs) {
+            msg.channel.send("saving chats disabled");
+        }else{
+            msg.channel.send("saving chats enabled");
+        }
+        enableLogs = !enableLogs;
     }
 
     if (msg.content.startsWith("+help")) {
@@ -110,6 +167,7 @@ client.on("message", (msg) => {
                 -u      select user
                 -c      amount images to save
                 -i      platform info
+                -l      enable/disable logs
             `);
     }
 
@@ -119,6 +177,7 @@ client.on("message", (msg) => {
                 hostname:       ${os.hostname()}
                 system:         ${os.platform()}
                 architecture:   ${os.arch()}
+                saving logs:   ${enableLogs}
             `)
     }
 
@@ -130,8 +189,7 @@ client.on("message", (msg) => {
         let path = create_folders(msg);
         let name = path + "/" + msg.attachments.first().name;
         let url = msg.attachments.first().url;
-        save_img(url, name);
-        client.user.setActivity(`"+help"`);
+        lastAttachment = save_img(url, name);
     }
 
     if (msg.content.startsWith("+dump")) {
@@ -172,7 +230,6 @@ client.on("message", (msg) => {
                     });
                 }
                 
-                
 
                 let x = 0;
                 for (var i = 0; i <= buffer.length - 1; i++) {
@@ -186,8 +243,11 @@ client.on("message", (msg) => {
                 }
             })
             .catch(console.error);
+            
     }
-    client.user.setActivity(`"+dump"`);
+    if (enableLogs) {
+            writeLog(msg);
+    }
 });
 
 client.login(pass.TOKEN);
