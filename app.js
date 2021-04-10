@@ -18,7 +18,7 @@ let fsp = require(`fs/promises`);
 var Map = require("collection-map");
 
 /*var enableLogs = true;*/
-var enableLogs = false;
+var enableLogs = true;
 var lastAttachment = "";
 
 let limit = 100;
@@ -93,14 +93,23 @@ function save_img(url, name) {
     }
 }
 
+  function makeBufforHeader(msg){
+     var nickName = (msg.author.username+ "                 |").substring(0, 15);;
+    var date = new Date();
+    var hours = ((date.getHours()<10?"0":"")+date.getHours())
+    var min = ((date.getMinutes()<10?"0":"")+date.getMinutes())
+    var buffer = `${hours}:${min} ${nickName} |`
+
+    return buffer
+
+  }
 
 function writeLog(msg){
     let path = create_folders(msg);
     let name = path + "/logs.txt";
+    let attAndContent = false; /*what if you send text and attachment?*/
       
     fs.readFile(name,(err, data) => {
-
-        console.log(data)
 
         if (typeof(data) === "undefined"){
            /*when file hasn't got content*/
@@ -110,24 +119,27 @@ function writeLog(msg){
             });
         }
     });
-  
-    var nickName = (msg.author.username+ "                 |").substring(0, 15);;
-    var date = new Date();
-    var hours = ((date.getHours()<10?"0":"")+date.getHours())
-    var min = ((date.getMinutes()<10?"0":"")+date.getMinutes())
-    var buffer = `${hours}:${min} ${nickName} |`
+    var buffer = makeBufforHeader(msg);
+   
     
 
     
-    if (msg.content) {
-        buffer += msg.content;
+    if (msg.content != "") {
+        buffer += msg.content+" ";
+        attAndContent = true;
     }
 
     if (msg.attachments.first()) {
         if (lastAttachment == "") {
             lastAttachment = msg.attachments.first().name;
         }
-        buffer += `Sent image: ${lastAttachment}\n`
+        if (attAndContent) {
+            buffer += "\n";
+            buffer += makeBufforHeader(msg);
+            buffer += `Sent image: ${lastAttachment}\n`
+        }else{
+            buffer += `Sent image: ${lastAttachment}\n`
+        }
     }
 
 
@@ -184,7 +196,7 @@ client.on("message", (msg) => {
 
     if (msg.attachments.first()) {
         console.log("attachment");
-        client.user.setActivity(`"saving...."`);
+
 
         let path = create_folders(msg);
         let name = path + "/" + msg.attachments.first().name;
