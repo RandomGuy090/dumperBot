@@ -217,6 +217,10 @@ client.on("message", (msg) => {
                 -c      amount images to save
                 -i      platform info
                 -l      enable/disable logs
+
+                +delete      delete referenced comment
+                    -t      delay in seconds
+                    -s      delete command
             `);
     }
 
