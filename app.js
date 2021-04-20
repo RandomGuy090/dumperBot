@@ -20,6 +20,7 @@ var Map = require("collection-map");
 /*var enableLogs = true;*/
 var enableLogs = true;
 var lastAttachment = "";
+var deleteSelf = false;
 
 let limit = 100;
 const dumpPath = pass.SAVE_PATH;
@@ -98,7 +99,7 @@ function save_img(url, name) {
     var date = new Date();
     var hours = ((date.getHours()<10?"0":"")+date.getHours())
     var min = ((date.getMinutes()<10?"0":"")+date.getMinutes())
-    var buffer = `${hours}:${min} ${nickName} |`
+    var buffer = `${hours}:${min} ${nickName} |  `
 
     return buffer
 
@@ -120,10 +121,7 @@ function writeLog(msg){
         }
     });
     var buffer = makeBufforHeader(msg);
-   
-    
-
-    
+       
     if (msg.content != "") {
         buffer += msg.content+" ";
         attAndContent = true;
@@ -148,6 +146,22 @@ function writeLog(msg){
     });
 }
 
+function deleteMessage(msg, time){
+    if (deleteSelf) {
+        var del = msg.id
+    }else{
+        var del = msg.reference.messageID
+    }
+
+    setTimeout(() =>{
+       msg.channel.messages.fetch(del)
+       .then(message => message.delete())
+        .catch(console.error);
+    }, time*1000)
+    deleteSelf = false
+
+}
+
 client.on("ready", (chan) => {
     console.log("I am ready!");
     client.user.setActivity(`"+dump"`);
@@ -162,6 +176,29 @@ client.on("message", (msg) => {
 
     if (msg.content === "+ping") {
         msg.channel.send("pong");
+    }
+
+    if (msg.content.startsWith("+delete")) {
+
+        if (msg.reference == null) {
+            msg.channel.send("no message referenced")
+            return 0
+        }
+        
+        const args = msg.content.trim().split(/ +/g);
+        var waitBefDelete = 0;
+        for (var i = 0; i <= args.length; i++) {    
+            switch (args[i]) {
+                case "-t":
+                    waitBefDelete = parseInt(args[i + 1]);
+                    break;
+                case "-s":
+                    deleteSelf = true;
+                    deleteMessage(msg, 1)
+                    break;
+            }
+        }
+        deleteMessage(msg, waitBefDelete)
     }
 
     if (msg.content === "+dump -l") {
