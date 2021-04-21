@@ -86,7 +86,10 @@ function save_img(url, name) {
         x++;
         let res = fs.existsSync(name);
         if (res) {
-            name = name + "0";
+            var tmp = name.split(".");
+            var add = parseInt(Math.random()*10)
+            tmp[1] = "."+tmp[1];
+            name = tmp[0] + add +tmp[1];
         } else {
             download(url, name);
             return name;
