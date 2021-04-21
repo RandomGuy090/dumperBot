@@ -115,7 +115,6 @@ function writeLog(msg){
 
         if (typeof(data) === "undefined"){
            /*when file hasn't got content*/
-           console.log("empty");
                 fs.appendFile(name, `<-----------------#${msg.channel.name}------------$${msg.channel.guild.name}------------------>\n`, (err) => {
                 if (err) throw err;
             });
