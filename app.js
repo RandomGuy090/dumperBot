@@ -99,7 +99,7 @@ function save_img(url, name) {
 }
 
   function makeBufforHeader(msg){
-     var nickName = (msg.author.username+ "                 |").substring(0, 15);;
+    var nickName = (msg.author.username+ "                 |").substring(0, 15);;
     var date = new Date();
     var hours = ((date.getHours()<10?"0":"")+date.getHours())
     var min = ((date.getMinutes()<10?"0":"")+date.getMinutes())
@@ -113,18 +113,30 @@ function writeLog(msg){
     let path = create_folders(msg);
     let name = path + "/logs.txt";
     let attAndContent = false; /*what if you send text and attachment?*/
+    var buffer = makeBufforHeader(msg);
       
-    fs.readFile(name,(err, data) => {
-
-        if (typeof(data) === "undefined"){
+      try{
+        var data = fs.readFileSync(name,"utf8")
+        console.log(data);
+        console.log("reaad");
+        if (data.startsWith("<-----------------#") == false){
+           console.log("ADDING HEADER");
            /*when file hasn't got content*/
-                fs.appendFile(name, `<-----------------#${msg.channel.name}------------$${msg.channel.guild.name}------------------>\n`, (err) => {
+            /*fs.appendFile(name, `<-----------------#${msg.channel.name}------------$${msg.channel.guild.name}------------------>\n`, (err) => {*/
+            let tmp = `<-----------------#${msg.channel.name}------------$${msg.channel.guild.name}------------------>\n`
+            buffer = tmp + data +makeBufforHeader(msg);
+            console.log(buffer);
+            fs.writeFileSync(name, "", (err) => {
                 if (err) throw err;
             });
         }
-    });
-    var buffer = makeBufforHeader(msg);
-       
+      }catch(e){
+        console.log(e);
+      }
+
+    
+ 
+
     if (msg.content != "") {
         buffer += msg.content+" ";
         attAndContent = true;
@@ -143,7 +155,13 @@ function writeLog(msg){
         }
     }
 
+    
+       
 
+
+
+    console.log("final");
+    console.log(buffer);
     fs.appendFile(name, buffer+"\n", (err) => {
         if (err) throw err;
     });
