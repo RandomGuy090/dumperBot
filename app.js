@@ -131,7 +131,7 @@ function writeLog(msg){
             });
         }
       }catch(e){
-        console.log(e);
+        
       }
 
     
